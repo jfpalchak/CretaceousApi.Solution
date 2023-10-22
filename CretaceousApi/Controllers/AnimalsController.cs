@@ -49,9 +49,7 @@ public class AnimalsController : ControllerBase
   public async Task<IActionResult> Put(int id, Animal animal)
   {
     if (id != animal.AnimalId)
-    {
       return BadRequest();
-    }
 
     _db.Animals.Update(animal);
 
@@ -62,13 +60,9 @@ public class AnimalsController : ControllerBase
     catch (DbUpdateConcurrencyException)
     {
       if (!AnimalExists(id))
-      {
         return NotFound();
-      }
       else
-      {
         throw;
-      }
     }
 
     // 204 No Content success status indicates the request succeeded, 
@@ -81,5 +75,19 @@ public class AnimalsController : ControllerBase
   private bool AnimalExists(int id)
   {
     return _db.Animals.Any(e => e.AnimalId == id);
+  }
+
+  // DELETE api/animals/{id}
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> DeleteAnimal(int id)
+  {
+    Animal animal = await _db.Animals.FindAsync(id);
+    if (animal == null)
+      return NotFound();
+
+    _db.Animals.Remove(animal);
+    await _db.SaveChangesAsync();
+
+    return NoContent();
   }
 }
