@@ -43,4 +43,43 @@ public class AnimalsController : ControllerBase
     await _db.SaveChangesAsync();
     return CreatedAtAction(nameof(GetAnimal), new { id = animal.AnimalId }, animal);
   }
+
+  // PUT api/animals/{id}
+  [HttpPut("{id}")]
+  public async Task<IActionResult> Put(int id, Animal animal)
+  {
+    if (id != animal.AnimalId)
+    {
+      return BadRequest();
+    }
+
+    _db.Animals.Update(animal);
+
+    try
+    {
+      await _db.SaveChangesAsync();
+    }
+    catch (DbUpdateConcurrencyException)
+    {
+      if (!AnimalExists(id))
+      {
+        return NotFound();
+      }
+      else
+      {
+        throw;
+      }
+    }
+
+    // 204 No Content success status indicates the request succeeded, 
+    // but the client doesn't need to navigate away from the current page
+    return NoContent(); 
+  }
+
+  // Return true of false after checking if any
+  // Animal in the database has the given ID
+  private bool AnimalExists(int id)
+  {
+    return _db.Animals.Any(e => e.AnimalId == id);
+  }
 }
