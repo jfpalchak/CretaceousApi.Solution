@@ -18,9 +18,25 @@ public class AnimalsController : ControllerBase
   // the base request URL for this Controller
   // GET api/animals
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<Animal>>> Get()
+  public async Task<ActionResult<IEnumerable<Animal>>> Get([FromQuery] string species, [FromQuery] string name, [FromQuery] int minimumAge, int age)
   {
-    return await _db.Animals.ToListAsync();
+    IQueryable<Animal> query = _db.Animals.AsQueryable();
+
+    if (species != null)
+      query = query.Where(entry => entry.Species == species);
+
+    if (name != null)
+      query = query.Where(entry => entry.Name == name);
+
+    if (minimumAge > 0)
+      query = query.Where(entry => entry.Age >= minimumAge);
+
+    // the DEFAULT value for an integer parameter is 0,
+    // when no value for the parameter is received
+    if (age != 0)
+      query = query.Where(entry => entry.Age == age);
+    
+    return await query.ToListAsync();
   }
 
   // GET api/animals/{id}
@@ -37,7 +53,7 @@ public class AnimalsController : ControllerBase
 
   // POST api/animals
   [HttpPost]
-  public async Task<ActionResult<Animal>> Post(Animal animal)
+  public async Task<ActionResult<Animal>> Post([FromBody] Animal animal)
   {
     _db.Animals.Add(animal);
     await _db.SaveChangesAsync();
